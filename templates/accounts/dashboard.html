@@ -1,0 +1,408 @@
+{% extends "../base.html" %}
+{% block d3 %}
+<link media="all" href="/static/nvd3/build/nv.d3.css" type="text/css" rel="stylesheet" />
+<script type="text/javascript" src='/static/d3/d3.min.js'></script>
+<script type="text/javascript" src='/static/nvd3/build/nv.d3.min.js'></script>
+{% load nvd3_tags %}
+{% endblock d3 %}
+
+
+{% block head %}
+{% for key,value in panel_dict.items %}
+    {% for val in value %}
+        {% if val.1 == 'discreteBarChart' %}
+            {% load_chart val.1 val.0 "discretebarchart_container" %}
+        {% elif val.1 == 'lineChart' %}
+            {% load_chart val.1 val.0 "linechart_container" %}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+
+{% endblock head %}
+{% block content %}
+<!--begin::Toolbar-->
+<div class="d-flex align-items-center flex-wrap" style="float: right;">
+    <a href="#" class="btn btn-outline-primary" onclick="showDiv('True')">
+        <i class="flaticon2-poll-symbol"></i> Add Panel
+    </a>
+    
+</div>
+    <div class="col-lg-4 col-md-9 col-sm-12" style="float: right;">
+     <div class='input-group' id='kt_daterangepicker_6'>
+        <input type='text' class="form-control" readonly  placeholder="Select date range"/>
+        <div class="input-group-append">
+         <span class="input-group-text"><i class="la la-calendar-check-o"></i></span>
+        </div>
+       </div>
+    </div>
+<!--end::Toolbar-->
+<br><br><br>
+<div id="add_panel" class="card card-custom" style="display: none;">
+    <div class="card-header">
+        <h3 class="card-title">
+            Add Variable
+        </h3>
+        <div class="card-toolbar">
+            <div class="example-tools justify-content-center">
+                <span class="example-toggle" data-toggle="tooltip" title="View code"></span>
+                <span class="example-copy" data-toggle="tooltip" title="Copy code"></span>
+            </div>
+        </div>
+    </div>
+    <form action="{% url 'dashboard' %}" method="post">
+        {% csrf_token %}
+        <div class="card-body mb-4">
+            <div class="form-group col-6">
+                <label>Panel Name <span class="text-danger">*</span></label>
+                <input type="text" name="panelName" id="panelName" class="form-control"
+                    placeholder="Enter panel name" />
+            </div>
+            <div class="form-group col-4">
+                <label for="exampleSelect1">Chart Type <span class="text-danger">*</span></label>
+                <select class="form-control" name="ChartType" id="ChartType" onchange="showDivv(this)">
+                    <option>Select ChartType ...</option>
+                    <option value="BarChart">BarChart</option>
+                    <option value="LineChart">LineChart</option>
+                </select>
+            </div>
+            <div class="form-group col-4">
+                <label for="exampleSelect1">DataSource <span class="text-danger">*</span></label>
+                <select name="DatasourceId" id="DatasourceId" class="form-control selectpicker" multiple>
+                    {% for ds in datasources %}
+                    <option value="{{ds.id}}">{{ds.Name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!-- <div class="form-group col-6">
+                <label>Query <span class="text-danger">*</span></label>
+                <input type="text" name="query" id="query" class="form-control"
+                    placeholder="Write your Query" />
+                <label>Query <span class="text-danger">*</span></label>
+                <input type="text" name="query" id="query" class="form-control"
+                    placeholder="Write your Query" />
+            </div> -->
+            <div id="query_div" class="form-group col-6">
+                
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary mr-2">Submit</button>
+            <button type="reset" class="btn btn-secondary" onclick="showDiv('False')">Cancel</button>
+        </div>
+    </form>
+</div>
+
+<div class="card card-custom gutter-b">
+    <div class="card-header">
+        <div class="card-title">
+            <h3 class="card-label">
+                Variables
+                <small>Global for all Panels</small>
+            </h3>
+        </div>
+    </div>
+    <div class="card-body">
+        {% for key,value in variables_dict.items %}
+        {% for val in value %}
+        {% if key == 'Query' and val.2 == 0 %}
+        <span>{{val.1}}</span>
+        <select id='g_query'>
+            {% for v in val.0 %}
+            <option value="">{{v}}</option>
+            {% endfor %}
+        </select>
+        {% elif key == 'Custom' and val.2 == 0 %}
+        <span>{{val.1}}</span>
+        <select id='g_custom'>
+            {% for v in val.0 %}
+            <option value="">{{v}}</option>
+            {% endfor %}
+        </select>
+        {% elif key == 'Textbox' and val.2 == 0 %}
+        <span>{{val.1}}</span>
+        <input type="text" name="" id="" value={{val.0}}>
+        {% elif key == 'Constant' and val.2 == 0 %}
+        <span>{{val.1}}</span>
+        <select name="" id="">
+            {% for v in val.0 %}
+            <option value="">{{v}}</option>
+            {% endfor %}
+        </select>
+        {% elif key == 'Datasource' and val.2 == 0 %}
+        <span>{{val.1}}</span>
+        <select name="" id="">
+            {% for v in val.0 %}
+            <option value="">{{v}}</option>
+            {% endfor %}
+        </select>
+        {% elif key == 'Interval' and val.2 == 0 %}
+        <span>{{val.1}}</span>
+        <select name="" id="">
+            {% for v in val.0 %}
+            <option value="">{{v}}</option>
+            {% endfor %}
+        </select>
+        {% elif key == 'Adhocfilters' and val.2 == 0 %}
+        <span>{{val.1}}</span>
+        <select name="" id="">
+            {% for v in val.0 %}
+            <option value="">{{v}}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+
+{% for panel in panels %}
+<div class="row"  style="float: left; width: 50%; margin-left: 0.5em;">
+    <div class="col-lg-12">
+        <!--begin::Card-->
+        <div class="card card-custom gutter-b">
+            <div class="card-header">
+                <div class="card-title">
+                    {% for key,value in variables_dict.items %}
+            {% for val in value %}
+            {% if key == 'Query' and val.2 != 0 and panel.id == val.2 %}
+            <div class="card card-custom gutter-b ">
+                <span>{{val.1}}</span>
+                <select name="" id="">
+                    {% for v in val.0 %}
+                    <option value="">{{v}}</option>
+                    {% endfor %}
+                </select>
+                {% elif key == 'Custom' and val.2 != 0 and panel.id == val.2 %}
+                <span>{{val.1}}</span>
+                <select id='l_custom'>
+                    {% for v in val.0 %}
+                    <option value="">{{v}}</option>
+                    {% endfor %}
+                </select>
+                {% elif key == 'Textbox' and val.2 != 0 and panel.id == val.2 %}
+                <span>{{val.1}}</span>
+                <input type="text" name="" id="" value={{val.0}}>
+                {% elif key == 'Constant' and val.2 != 0 and panel.id == val.2 %}
+                <span>{{val.1}}</span>
+                <select name="" id="">
+                    {% for v in val.0 %}
+                    <option value="">{{v}}</option>
+                    {% endfor %}
+                </select>
+                {% elif key == 'Datasource' and val.2 != 0 and panel.id == val.2 %}
+                <span>{{val.1}}</span>
+                <select name="" id="">
+                    {% for v in val.0 %}
+                    <option value="">{{v}}</option>
+                    {% endfor %}
+                </select>
+                {% elif key == 'Interval' and val.2 != 0 and panel.id == val.2 %}
+                <span>{{val.1}}</span>
+                <select name="" id="">
+                    {% for v in val.0 %}
+                    <option value="">{{v}}</option>
+                    {% endfor %}
+                </select>
+                {% elif key == 'Adhocfilters' and val.2 != 0 and panel.id == val.2 %}
+                <span>{{val.1}}</span>
+                <select name="" id="">
+                    {% for v in val.0 %}
+                    <option value="">{{v}}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+                {% endfor %}
+                {% endfor %}
+                </div>
+                <div class="card-toolbar">
+                    <div class="dropdown dropdown-inline" data-toggle="tooltip" title="Quick actions" data-placement="left">
+                        <a href="#" class="btn btn-hover-light-primary btn-sm btn-icon" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="ki ki-bold-more-hor"></i>
+                        </a>
+                        <div class="dropdown-menu p-0 m-0 dropdown-menu-md dropdown-menu-right">
+                            <!--begin::Navigation-->
+                            <ul class="navi navi-hover">
+                                <li class="navi-header font-weight-bold py-4">
+                                    <span class="font-size-lg">Choose Label:</span>
+                                    <i class="flaticon2-information icon-md text-muted" data-toggle="tooltip" data-placement="right" title="Click to learn more..."></i>
+                                </li>
+                                <li class="navi-separator mb-3 opacity-70"></li>
+                                <li class="navi-item">
+                                    <a href="#" class="navi-link">
+                                        <span class="navi-text">
+                                            <span class="label label-xl label-inline label-light-success">Download SVG</span>
+                                        </span>
+                                    </a>
+                                </li>
+                                <li class="navi-item">
+                                    <a href="#" class="navi-link">
+                                        <span class="navi-text">
+                                            <span class="label label-xl label-inline label-light-success">Download CSV</span>
+                                        </span>
+                                    </a>
+                                </li>
+                                <!-- <li class="navi-item">
+                                    <a href="#" class="navi-link">
+                                        <span class="navi-text">
+                                            <span class="label label-xl label-inline label-light-warning">Suplier</span>
+                                        </span>
+                                    </a>
+                                </li>
+                                <li class="navi-item">
+                                    <a href="#" class="navi-link">
+                                        <span class="navi-text">
+                                            <span class="label label-xl label-inline label-light-primary">Member</span>
+                                        </span>
+                                    </a>
+                                </li>
+                                <li class="navi-item">
+                                    <a href="#" class="navi-link">
+                                        <span class="navi-text">
+                                            <span class="label label-xl label-inline label-light-dark">Staff</span>
+                                        </span>
+                                    </a>
+                                </li> -->
+                                <li class="navi-separator mt-3 opacity-70"></li>
+                                <li class="navi-footer py-4">
+                                    <a href="{% url 'delete_panel' panel.id %}" class="navi-link">
+                                        <span class="navi-text">
+                                            <span class="label label-xl label-inline label-light-danger">Delete Panel</span>
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                            <!--end::Navigation-->
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            {% if panel.ChartType == 'BarChart' %}
+            <div class="card-body">
+                <h3 class="card-label">{{ panel.PanelName }}</h3>
+                {% include_container "discretebarchart_container" 300 500 %}
+                <!-- {% include_container "linechart_container" 300 500 %}  -->
+                <!-- <div class="apexcharts-toolbar" style="top: 0px; right: 3px;"><div class="apexcharts-menu-icon" title="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"></path><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></svg></div><div class="apexcharts-menu"><div class="apexcharts-menu-item exportSVG" title="Download SVG">Download SVG</div><div class="apexcharts-menu-item exportPNG" title="Download PNG">Download PNG</div><div class="apexcharts-menu-item exportCSV" title="Download CSV">Download CSV</div></div></div> -->
+            </div>
+            {% elif panel.ChartType == 'LineChart' %}
+            <div class="card-body">
+                <h3 class="card-label">{{ panel.PanelName }}</h3>
+                    {% include_container "linechart_container" 300 500 %} 
+                    <!-- {% include_container "discretebarchart_container" 300 500 %}             -->
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock content %}
+
+{% block script %}
+
+
+<script src="/static/dist/assets/plugins/custom/draggable/draggable.bundle.js"></script>
+<!--end::Page Vendors-->
+<!--begin::Page Scripts(used by this page)-->
+<script src="/static/dist/assets/js/pages/features/cards/draggable.js"></script>
+<!--end::Page Scripts-->
+<script>
+    document.multiselect('#g_query')
+        .setCheckBoxClick("checkboxAll", function (target, args) {
+            console.log("Checkbox 'Select All' was clicked and got value ", args.checked);
+        })
+        .setCheckBoxClick("1", function (target, args) {
+            console.log("Checkbox for item with value '1' was clicked and got value ", args.checked);
+        });
+
+    document.multiselect('#g_custom')
+        .setCheckBoxClick("checkboxAll", function (target, args) {
+            console.log("Checkbox 'Select All' was clicked and got value ", args.checked);
+        })
+        .setCheckBoxClick("1", function (target, args) {
+            console.log("Checkbox for item with value '1' was clicked and got value ", args.checked);
+        });
+
+    document.multiselect('#l_custom')
+        .setCheckBoxClick("checkboxAll", function (target, args) {
+            console.log("Checkbox 'Select All' was clicked and got value ", args.checked);
+        })
+        .setCheckBoxClick("1", function (target, args) {
+            console.log("Checkbox for item with value '1' was clicked and got value ", args.checked);
+        });
+
+</script>
+<script>
+    function showDiv(element) {
+        if (element === 'True') {
+            document.getElementById("add_panel").style.display = 'block';
+        }
+        else {
+            document.getElementById("add_panel").style.display = 'none';
+        }
+
+    }
+
+
+
+    var KTCardDraggable = function () {
+        return {
+            //main function to initiate the module
+            init: function () {
+                var containers = document.querySelectorAll('.draggable-zone');
+
+                if (containers.length === 0) {
+                    return false;
+                }
+
+                var swappable = new Sortable.default(containers, {
+                    draggable: '.draggable',
+                    handle: '.draggable .draggable-handle',
+                    mirror: {
+                        appendTo: 'body',
+                        constrainDimensions: true
+                    }
+                });
+            }
+        };
+    }();
+    let query = [];
+
+    jQuery(document).ready(function () {
+        KTCardDraggable.init();
+        $(document).on('change','#DatasourceId',function(){
+            let self = $(this);
+            let values = self.val();
+            console.log(values);
+            let query_div = $("#query_div");
+            $.each(query,function(index, value){
+                if(!values.includes(value)){
+                    query_div.find('[name="query['+value+']"]').parents("div.query").remove()
+                }
+            })
+            $.each(values,function(index, value){
+                if(!query.includes(value)){
+                    let vall= self.find('[value="'+value+'"]').text();
+                    query_div.append('<div class="query"><label>Query '+vall+' <span class="text-danger">*</span></label><input type="text" name="query['+value+']" id="query-'+value+'" class="form-control" placeholder="Write your Query" /></div>')
+                }
+            })
+            query = values;
+        })
+    });
+</script>
+
+{% endblock script %}
+
+{% block style %}
+<style>
+    #panel_div {
+        background-color: rgb(238, 237, 237);
+        width: 500px;
+        border: 2px solid rgb(170, 170, 170);
+        border-style: dotted;
+        padding: 20px;
+        margin: 15px;
+        border-radius: 1.5%;
+    }
+</style>
+{% endblock style %}

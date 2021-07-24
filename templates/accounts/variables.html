@@ -1,0 +1,296 @@
+{% extends "../base.html" %}
+{% block content %}
+<!--begin::Toolbar-->
+<div class="d-flex align-items-center flex-wrap" style="float: right;">
+    <a href="#" class="btn btn-outline-primary" onclick="showDiv('True')">
+        <i class="flaticon2-poll-symbol"></i> Add Variable
+    </a>
+</div>
+<!--end::Toolbar-->
+<br><br><br>
+    <div id="add_variable" class="card card-custom" style="display: none;">
+        <div class="card-header">
+            <h3 class="card-title">
+             Add Variable
+            </h3>
+            <div class="card-toolbar">
+             <div class="example-tools justify-content-center">
+              <span class="example-toggle" data-toggle="tooltip" title="View code"></span>
+              <span class="example-copy" data-toggle="tooltip" title="Copy code"></span>
+             </div>
+            </div>
+           </div>
+           <form action="{% url 'variables' %}" method="post">
+            {% csrf_token %}
+            <div>
+                <span>Name</span><input type="text" name="Name" id="Name">
+                <span>Type</span><select name="VariableType" id="VariableType" onchange="showDivv(this)">
+                    <option value="">select variable type ... </option>
+                    <option value="Query">Query</option>
+                    <option value="Custom">Custom</option>
+                    <option value="Textbox">Textbox</option>
+                    <option value="Constant">Constant</option>
+                    <option value="Datasource">Datasource</option>
+                    <option value="Interval">Interval</option>
+                    <option value="Adhocfilters">Ad hoc filters</option>
+                </select>
+                <br>
+                <span>Lable</span><input type="text" name="Lable" id="Lable">
+                <span>Hide</span><select name="Hide" id="Hide">
+                    <option value=""></option>
+                    <option value="Lable">Lable</option>
+                    <option value="Variable">Variable</option>
+                </select>
+                <br>
+                <span>Description</span><textarea name="Description" id="Description" cols="50" rows="1"></textarea>
+                <br>
+                <span>Variable Scope</span><select name="VariableScope" id="VariableScope" onchange="showPanelDiv(this)">
+                    <option value="Global">Global</option>
+                    <option value="Local">Local</option>
+                </select>
+                <br><br>
+                <div id="panel_div" style="display: none;">
+                    <span>Select Panel Name</span><select name="PanelName" id="PanelName">
+                        <option value="0">select panelName ...</option>
+                        {% for panel in panels %}
+                    <option value="{{panel.id}}">{{panel.PanelName}}</option>
+                    {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <br><br>
+            <div id="query_div" style="display: none;">
+                <h3>Query Options</h3>
+                <span>Datasource</span><select name="QueryDatasource" id="QueryDatasource">
+                    <option value="0">select datasource ...</option>
+                    {% for ds in dataSources %}
+                    <option value={{ds.id}}>{{ds.Name}}</option>
+                    {% endfor %}
+                </select>
+                <span>Refresh</span><select name="Refresh" id="Refresh">
+                    <option value="Never">Never</option>
+                    <option value="OnDashboardLoad">On Dashboard Load</option>
+                    <option value="OnTimeRangeChange">On Time Range Change</option>
+                </select>
+                <br>
+                <span>Query</span><textarea name="Query" id="Query" cols="50" rows="1"></textarea>
+                <br>
+                <span>Regex</span><textarea name="Regex" id="Regex" cols="50" rows="1"></textarea>
+                <br>
+                <span>Sort</span><select name="SortType" id="SortType">
+                    <option value="Disabled">Disabled</option>
+                    <option value="Alphabetical(asc)">Alphabetical(asc)</option>
+                    <option value="Alphabetical(desc)">Alphabetical(desc)</option>
+                    <option value="Numerical(asc)">Numerical(asc)</option>
+                    <option value="Numerical(desc)">Numerical(desc)</option>
+                    <option value="Alphabetical(case-insensitive,asc)">Alphabetical(case-insensitive, asc)</option>
+                    <option value="Alphabetical(case-insensitive,desc)">Alphabetical(case-insensitive, desc)</option>
+                </select>
+                <br><br>
+                <h3>Value group tag</h3>
+                <span>Enabled</span><input type="checkbox" name="ValueGroupTag" id="ValueGroupTag">
+            </div>
+            <div id="selection_div" style="display: none;">
+                <h3>Selection Option</h3>
+                <span>Multi-value</span><input type="checkbox" name="MultiValue" id="MultiValue">
+                <br>
+                <span>Include All option</span><input type="checkbox" name="IncludeAllOption" id="IncludeAllOption">    
+            </div>
+            <div id="custom_div" style="display: none;">
+                <h3>Custom Options</h3>
+                <span>Values separated by comma</span><textarea name="CustomValues" id="CustomValues" cols="50" rows="1"></textarea>
+                <br><br>
+            </div>
+            <div id="textbox_div" style="display: none;">
+                <h3>Textbox Options</h3>
+                <span>Default value</span><textarea name="TextboxValue" id="TextboxValue" cols="50" rows="1"></textarea>
+            </div>
+            <div id="constant_div" style="display: none;">
+                <h3>Constant Options</h3>
+                <span>Value</span><textarea name="ConstantValue" id="ConstantValue" cols="50" rows="1"></textarea>
+            </div>
+            <div id="datasource_div" style="display: none;">
+                <h3>Datasource Options</h3>
+                <span>Type</span><select name="DatasourceType" id="DatasourceType">
+                    <option value="0">select datasource ...</option>
+                    {% for ds in dataSources %}
+                    <option value={{ds.id}}>{{ds.Name}}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <span>Instance name filter</span><input type="text" name="InstanceNameFilter" id="InstanceNameFilter" value="">
+                <br><br>
+            </div>
+            <div id="interval_div" style="display: none;">
+                <h3>Interval Options</h3>
+                <span>Values</span><textarea name="IntervalValue" id="IntervalValue" cols="50" rows="1">1m,10m,30m,1h,6h,12h,1d,7d,14d,30d</textarea>
+                <br>
+                <span>Auto Option</span><input type="checkbox" name="AutoOption" id="AutoOption">
+            </div>
+            <div id="adhoc_div" style="display: none;">
+                <h3>Options</h3>
+                <span>Datasource</span><select name="adhocDataSource" id="adhocDataSource">
+                    <option value="0">select datasource ...</option>
+                    {% for ds in dataSources %}
+                    <option value={{ds.id}}>{{ds.Name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <br><br>
+            <input type="submit" value="Update">
+        </form>
+    </div>
+
+<div class=" card card-custom gutter-b card-body">
+    <table class="table">
+       <thead>
+           <tr>
+           <th>Variables List</th>
+           <th>Variables Type</th>
+           <th>Actions</th>
+           </tr>
+       </thead>
+       <tbody>
+           {% for variable in variables %}
+           <tr>
+               <td>{{ variable.Name }}</td>
+               <td>{{ variable.Type }}</td>
+               <td>
+                <a href="dashboard?DashboardId={{ dashboard.id|urlencode }}">
+                    <span class="svg-icon svg-icon-info svg-icon-2x">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                 <rect x="0" y="0" width="24" height="24"/>
+                                 <path d="M3,12 C3,12 5.45454545,6 12,6 C16.9090909,6 21,12 21,12 C21,12 16.9090909,18 12,18 C5.45454545,18 3,12 3,12 Z" fill="#000000" fill-rule="nonzero" opacity="0.3"/>
+                                 <path d="M12,15 C10.3431458,15 9,13.6568542 9,12 C9,10.3431458 10.3431458,9 12,9 C13.6568542,9 15,10.3431458 15,12 C15,13.6568542 13.6568542,15 12,15 Z" fill="#000000" opacity="0.3"/>
+                             </g>
+                         </svg>
+                     </span>
+                 </a>
+                 <a href="dashboard?DashboardId={{ dashboard.id|urlencode }}">
+                     <span class="svg-icon svg-icon-warning svg-icon-2x"><!--begin::Svg Icon | path:C:\wamp64\www\keenthemes\legacy\metronic\theme\html\demo3\dist/../src/media/svg/icons\General\Update.svg--><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                         <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                             <rect x="0" y="0" width="24" height="24"/>
+                             <path d="M8.43296491,7.17429118 L9.40782327,7.85689436 C9.49616631,7.91875282 9.56214077,8.00751728 9.5959027,8.10994332 C9.68235021,8.37220548 9.53982427,8.65489052 9.27756211,8.74133803 L5.89079566,9.85769242 C5.84469033,9.87288977 5.79661753,9.8812917 5.74809064,9.88263369 C5.4720538,9.8902674 5.24209339,9.67268366 5.23445968,9.39664682 L5.13610134,5.83998177 C5.13313425,5.73269078 5.16477113,5.62729274 5.22633424,5.53937151 C5.384723,5.31316892 5.69649589,5.25819495 5.92269848,5.4165837 L6.72910242,5.98123382 C8.16546398,4.72182424 10.0239806,4 12,4 C16.418278,4 20,7.581722 20,12 C20,16.418278 16.418278,20 12,20 C7.581722,20 4,16.418278 4,12 L6,12 C6,15.3137085 8.6862915,18 12,18 C15.3137085,18 18,15.3137085 18,12 C18,8.6862915 15.3137085,6 12,6 C10.6885336,6 9.44767246,6.42282109 8.43296491,7.17429118 Z" fill="#000000" fill-rule="nonzero"/>
+                         </g>
+                     </svg><!--end::Svg Icon--></span>
+                  </a>
+                  <a href="{% url 'delete_variable' variable.id %}">
+                     
+                     <span class="svg-icon svg-icon-danger svg-icon-2x" style="fill: #f1101a;"><!--begin::Svg Icon | path:C:\wamp64\www\keenthemes\legacy\metronic\theme\html\demo3\dist/../src/media/svg/icons\General\Trash.svg--><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                         <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                             <rect x="0" y="0" width="24" height="24"/>
+                             <path d="M6,8 L6,20.5 C6,21.3284271 6.67157288,22 7.5,22 L16.5,22 C17.3284271,22 18,21.3284271 18,20.5 L18,8 L6,8 Z" fill="#000000" fill-rule="nonzero"/>
+                             <path d="M14,4.5 L14,4 C14,3.44771525 13.5522847,3 13,3 L11,3 C10.4477153,3 10,3.44771525 10,4 L10,4.5 L5.5,4.5 C5.22385763,4.5 5,4.72385763 5,5 L5,5.5 C5,5.77614237 5.22385763,6 5.5,6 L18.5,6 C18.7761424,6 19,5.77614237 19,5.5 L19,5 C19,4.72385763 18.7761424,4.5 18.5,4.5 L14,4.5 Z" fill="#000000" opacity="0.3"/>
+                         </g>
+                     </svg><!--end::Svg Icon-->
+                     </span>
+                  </a>
+             </td> 
+           </tr>
+           {% endfor %}
+       </tbody>
+   </table>
+</div>
+{% endblock content %}
+{% block script %}
+    <script>
+        function showDivv(element)
+        {
+            switch(element.value){
+                case "Query":
+                    document.getElementById("query_div").style.display = 'block';
+                    document.getElementById("selection_div").style.display = 'block';
+                    document.getElementById("custom_div").style.display = 'none';
+                    document.getElementById("textbox_div").style.display = 'none';
+                    document.getElementById("constant_div").style.display = 'none';
+                    document.getElementById("datasource_div").style.display = 'none';
+                    document.getElementById("interval_div").style.display = 'none';
+                    document.getElementById("adhoc_div").style.display = 'none';
+                    break;
+                case "Custom":
+                    document.getElementById("query_div").style.display = 'none';
+                    document.getElementById("selection_div").style.display = 'block';
+                    document.getElementById("custom_div").style.display = 'block';
+                    document.getElementById("textbox_div").style.display = 'none';
+                    document.getElementById("constant_div").style.display = 'none';
+                    document.getElementById("datasource_div").style.display = 'none';
+                    document.getElementById("interval_div").style.display = 'none';
+                    document.getElementById("adhoc_div").style.display = 'none';
+                    break;
+                case "Textbox":
+                    document.getElementById("query_div").style.display = 'none';
+                    document.getElementById("selection_div").style.display = 'none';
+                    document.getElementById("custom_div").style.display = 'none';
+                    document.getElementById("textbox_div").style.display = 'block';
+                    document.getElementById("constant_div").style.display = 'none';
+                    document.getElementById("datasource_div").style.display = 'none';
+                    document.getElementById("interval_div").style.display = 'none';
+                    document.getElementById("adhoc_div").style.display = 'none';
+                    break;
+                case "Constant":
+                    document.getElementById("query_div").style.display = 'none';
+                    document.getElementById("selection_div").style.display = 'none';
+                    document.getElementById("custom_div").style.display = 'none';
+                    document.getElementById("textbox_div").style.display = 'none';
+                    document.getElementById("constant_div").style.display = 'block';
+                    document.getElementById("datasource_div").style.display = 'none';
+                    document.getElementById("interval_div").style.display = 'none';
+                    document.getElementById("adhoc_div").style.display = 'none';
+                    break;
+                case "Datasource":
+                    document.getElementById("query_div").style.display = 'none';
+                    document.getElementById("selection_div").style.display = 'block';
+                    document.getElementById("custom_div").style.display = 'none';
+                    document.getElementById("textbox_div").style.display = 'none';
+                    document.getElementById("constant_div").style.display = 'none';
+                    document.getElementById("datasource_div").style.display = 'block';
+                    document.getElementById("interval_div").style.display = 'none';
+                    document.getElementById("adhoc_div").style.display = 'none';
+                    break;
+                case "Interval":
+                    document.getElementById("query_div").style.display = 'none';
+                    document.getElementById("selection_div").style.display = 'none';
+                    document.getElementById("custom_div").style.display = 'none';
+                    document.getElementById("textbox_div").style.display = 'none';
+                    document.getElementById("constant_div").style.display = 'none';
+                    document.getElementById("datasource_div").style.display = 'none';
+                    document.getElementById("interval_div").style.display = 'block';
+                    document.getElementById("adhoc_div").style.display = 'none';
+                    break;
+                case "Adhocfilters":
+                    document.getElementById("query_div").style.display = 'none';
+                    document.getElementById("selection_div").style.display = 'none';
+                    document.getElementById("custom_div").style.display = 'none';
+                    document.getElementById("textbox_div").style.display = 'none';
+                    document.getElementById("constant_div").style.display = 'none';
+                    document.getElementById("datasource_div").style.display = 'none';
+                    document.getElementById("interval_div").style.display = 'none';
+                    document.getElementById("adhoc_div").style.display = 'block';
+                    break;
+            }
+
+        }
+
+        function showDiv(element)
+        {
+            if (element === 'True')
+            {
+                document.getElementById("add_variable").style.display = 'block';
+            }
+            else{
+                document.getElementById("add_variable").style.display = 'none';
+            }
+
+        }
+
+        function showPanelDiv(element){
+            if (element.value == "Local"){
+                document.getElementById("panel_div").style.display = 'block';
+            }
+            else{
+                document.getElementById("panel_div").style.display = 'none';
+            }
+        }
+    </script>
+{% endblock script %}

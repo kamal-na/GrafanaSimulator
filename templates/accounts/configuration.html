@@ -1,0 +1,200 @@
+{% extends "../base.html" %}
+{% block content %}
+<!--begin::Toolbar-->
+<div class="d-flex align-items-center flex-wrap" style="float: right;">
+    <a href="#" class="btn btn-outline-primary" onclick="showDiv('True')">
+        <i class="flaticon2-poll-symbol"></i> Add DataSource
+    </a>
+</div>
+<!--end::Toolbar-->
+<br><br><br>
+    <div id="add_datasource" class="card card-custom" style="display: none;">
+        <div class="card-header">
+         <h3 class="card-title">
+          Add DataSource
+         </h3>
+         <div class="card-toolbar">
+          <div class="example-tools justify-content-center">
+           <span class="example-toggle" data-toggle="tooltip" title="View code"></span>
+           <span class="example-copy" data-toggle="tooltip" title="Copy code"></span>
+          </div>
+         </div>
+        </div>
+        <!--begin::Form-->
+        <form action="{% url 'Add_DataSource' %}" method="post">
+            {% csrf_token %}
+            <div class="card-body mb-4">
+                <div class="form-group col-6">
+                    <label>Name <span class="text-danger">*</span></label>
+                    <input type="text" name="DataSourceName" id="DataSourceName" class="form-control"  placeholder="Enter datasource name"/>
+                </div>
+                <div class="form-group col-4">
+                    <label for="exampleSelect1">Example select <span class="text-danger">*</span></label>
+                    <select class="form-control" name="DataSourceType" id="DataSourceType" onchange="showDivv(this)">
+                        <option >Select DataSource ...</option>
+                        <option value="PostgreSQL">PostgreSQL</option>
+                        <option value="MySQL">MySQL</option>
+                        <option value="Oracle">Oracle</option>
+                        <option value="SqlServer">SqlServer</option>
+                        <option value="Zabbix">Zabbix</option>
+                    </select>
+                </div>
+                <br><br>
+                <div id="db_div" style="display: none;">
+                    <div>
+                        <h3>Connection</h3>
+                        <span>Host: </span><input name="Host" id="Host" type="text"/>
+                        <br><br>
+                        <span>Port: </span><input name="Port" id="Port" type="text"/>
+                        <br><br>
+                        <span>DataBase: </span><input name="DataBase" id="DataBase" type="text"/>
+                        <br><br>
+                        <span>User: </span><input name="DB_User" id="DB_User" type="text"/><span> Password: </span><input name="DB_Password" id="DB_Password" type="password"/>
+                    </div>
+                    <br><br>
+                    <div>
+                        <h3>Connection limits</h3>
+                        <span>Max opens: </span><input name="Max_opens" id="Max_opens" type="text">
+                        <br><br>
+                        <span>Max idels: </span><input name="Max_idels" id="Max_idels" type="text">
+                        <br><br>
+                        <span>Max liftime: </span><input name="Max_lifetime" id="Max_lifetime" type="text">
+                        <br><br>
+                    </div>
+                </div>
+                <br><br>
+                <div id="api_div" style="display: none;">
+                    <div>
+                        <h3>HTTP</h3>
+                        <span>URL: </span><input type="text" name="URL" id="URL">
+                        <br><br>
+                        <span>Access: </span><select name="Access" id="Access"><option value="Server">Server(default)</option></select>
+                    </div>
+                    <br><br>
+                    <div>
+                        <h3>Auth</h3>
+                        <span>Basic auth</span><input type="checkbox" name="Basic_Auth" id="Basic_Auth">
+                        <span>TLS Client Auth</span><input type="checkbox" name="TLS_Client_Auth" id="TLS_Client_Auth">
+                        <span>Skip TLS verify</span><input type="checkbox" name="Skip_TLS_verify" id="Skip_TLS_verify">
+                        <span>Forward OAuth identity</span><input type="checkbox" name="Forward_OAuth_identity" id="Forward_OAuth_identity">
+                        <span>With Credentials</span><input type="checkbox" name="With_Credentials" id="With_Credentials">
+                        <span>With CA Cert</span><input type="checkbox" name="With_CA_Cert" id="With_CA_Cert">
+                    </div>
+                    <br><br>
+                    <div>
+                        <h3>Zabbix API details</h3>
+                        <span>User Name: </span><input type="text" name="Api_UserName" id="Api_UserName">
+                        <br><br>
+                        <span>Password: </span><input type="password" name="Api_Password" id="Api_Password">
+                        <br><br>
+                        <span>Trends: </span><input type="checkbox" name="Trends" id="Trends">
+                        <br><br>
+                        <span>After: </span><input type="text" name="After" id="After">
+                        <span>Range: </span><input type="text" name="Range" id="Range">
+                        <br><br>
+                        <span>Cache TTL: </span><input type="text" name="Cache_TTL" id="Cache_TTL">
+                    </div>
+                    <br><br>
+                    <div>
+                        <h3>Direct DB Connection</h3>
+                        <span>Enable: </span><input type="checkbox" name="Direct_DB_Connection" id="Direct_DB_Connection">
+                    </div>
+                    <br><br>
+                    <div>
+                        <h3>Alerting</h3>
+                        <span>Enable alerting: </span><input type="checkbox" name="Alerting" id="Alerting">
+                    </div>
+                </div>
+                <br><br>
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                <button type="reset" class="btn btn-secondary">Cancel</button>
+            </div>
+        </form>
+        <!--end::Form-->
+    </div>
+
+<br>
+<div class=" card card-custom gutter-b card-body">
+    <table class="table">
+       <thead>
+           <tr>
+            <th>Data Source Name</th>
+            <th>Data Source Type</th>
+            <th>
+                Actions
+            </th>
+           </tr>
+       </thead>
+       <tbody>
+           {% for ds in dataSources %}
+           <tr>
+               <td>{{ ds.Name }}</td>
+               <td>{{ ds.Type }}</td>
+               <td>
+                <a href="dashboard?DashboardId={{ dashboard.id|urlencode }}">
+                    <span class="svg-icon svg-icon-info svg-icon-2x">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                 <rect x="0" y="0" width="24" height="24"/>
+                                 <path d="M3,12 C3,12 5.45454545,6 12,6 C16.9090909,6 21,12 21,12 C21,12 16.9090909,18 12,18 C5.45454545,18 3,12 3,12 Z" fill="#000000" fill-rule="nonzero" opacity="0.3"/>
+                                 <path d="M12,15 C10.3431458,15 9,13.6568542 9,12 C9,10.3431458 10.3431458,9 12,9 C13.6568542,9 15,10.3431458 15,12 C15,13.6568542 13.6568542,15 12,15 Z" fill="#000000" opacity="0.3"/>
+                             </g>
+                         </svg>
+                     </span>
+                 </a>
+                 <a href="dashboard?DashboardId={{ dashboard.id|urlencode }}">
+                     <span class="svg-icon svg-icon-warning svg-icon-2x"><!--begin::Svg Icon | path:C:\wamp64\www\keenthemes\legacy\metronic\theme\html\demo3\dist/../src/media/svg/icons\General\Update.svg--><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                         <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                             <rect x="0" y="0" width="24" height="24"/>
+                             <path d="M8.43296491,7.17429118 L9.40782327,7.85689436 C9.49616631,7.91875282 9.56214077,8.00751728 9.5959027,8.10994332 C9.68235021,8.37220548 9.53982427,8.65489052 9.27756211,8.74133803 L5.89079566,9.85769242 C5.84469033,9.87288977 5.79661753,9.8812917 5.74809064,9.88263369 C5.4720538,9.8902674 5.24209339,9.67268366 5.23445968,9.39664682 L5.13610134,5.83998177 C5.13313425,5.73269078 5.16477113,5.62729274 5.22633424,5.53937151 C5.384723,5.31316892 5.69649589,5.25819495 5.92269848,5.4165837 L6.72910242,5.98123382 C8.16546398,4.72182424 10.0239806,4 12,4 C16.418278,4 20,7.581722 20,12 C20,16.418278 16.418278,20 12,20 C7.581722,20 4,16.418278 4,12 L6,12 C6,15.3137085 8.6862915,18 12,18 C15.3137085,18 18,15.3137085 18,12 C18,8.6862915 15.3137085,6 12,6 C10.6885336,6 9.44767246,6.42282109 8.43296491,7.17429118 Z" fill="#000000" fill-rule="nonzero"/>
+                         </g>
+                     </svg><!--end::Svg Icon--></span>
+                  </a>
+                  <a href="{% url 'delete_datasource' ds.id %}">
+                     
+                     <span class="svg-icon svg-icon-danger svg-icon-2x" style="fill: #f1101a;"><!--begin::Svg Icon | path:C:\wamp64\www\keenthemes\legacy\metronic\theme\html\demo3\dist/../src/media/svg/icons\General\Trash.svg--><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                         <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                             <rect x="0" y="0" width="24" height="24"/>
+                             <path d="M6,8 L6,20.5 C6,21.3284271 6.67157288,22 7.5,22 L16.5,22 C17.3284271,22 18,21.3284271 18,20.5 L18,8 L6,8 Z" fill="#000000" fill-rule="nonzero"/>
+                             <path d="M14,4.5 L14,4 C14,3.44771525 13.5522847,3 13,3 L11,3 C10.4477153,3 10,3.44771525 10,4 L10,4.5 L5.5,4.5 C5.22385763,4.5 5,4.72385763 5,5 L5,5.5 C5,5.77614237 5.22385763,6 5.5,6 L18.5,6 C18.7761424,6 19,5.77614237 19,5.5 L19,5 C19,4.72385763 18.7761424,4.5 18.5,4.5 L14,4.5 Z" fill="#000000" opacity="0.3"/>
+                         </g>
+                     </svg><!--end::Svg Icon-->
+                     </span>
+                  </a>
+             </td> 
+           </tr>
+           {% endfor %}
+       </tbody>
+   </table>
+</div>
+{% endblock content %}
+{% block script %}
+<script>
+    function showDivv(element)
+    {
+        if (element.value === "Zabbix"){
+            document.getElementById("api_div").style.display = 'block';
+            document.getElementById("db_div").style.display = 'none';
+        }
+        else{
+            document.getElementById("db_div").style.display = 'block';
+            document.getElementById("api_div").style.display = 'none';
+        }
+    }
+
+    function showDiv(element)
+        {
+            if (element === 'True')
+            {
+                document.getElementById("add_datasource").style.display = 'block';
+            }
+            else{
+                document.getElementById("add_datasource").style.display = 'none';
+            }
+
+        }
+
+</script>
+{% endblock script %}

@@ -1,0 +1,12 @@
+{% extends "../base.html" %}
+{% block content %}
+<p>Settings</p>
+<nav>
+    <span>
+        <a href="{% url 'configuration' %}">DataSources</a>
+    </span>
+    <span>
+        <a href="{% url 'variables' %}">Variables</a>
+    </span>
+</nav>
+{% endblock content %}
